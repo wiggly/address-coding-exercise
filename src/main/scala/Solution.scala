@@ -1,6 +1,6 @@
 object Solution {
   def main(args: Array[String]): Unit = {
-    val filename = "AddressBook"
+    val filename = "./AddressBook"
 
     AddressBook.loadFile(filename) match {
       case Left(err) => println(s"problems loading addressbook:\n$err")
