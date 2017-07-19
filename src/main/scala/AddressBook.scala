@@ -3,7 +3,9 @@ import com.github.tototoshi.csv.CSVReader
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, DateTimeFormatter}
 
-import scala.util.Try
+import cats.implicits._
+
+import scala.util.{Failure, Success, Try}
 
 object Sex {
   sealed trait SexValue
@@ -28,25 +30,31 @@ object AddressBookEntry {
   val dateFormat: DateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yy")
 
   def fromCsvRow(row: Seq[String]): Either[String,AddressBookEntry] = {
-    for {
-      // TODO: Left("bad entry") if we don't have enough fields
-      name <- Right(row(0))
-      sex <- Sex.fromString(row(1).trim).toRight(s"Unknown sex '$row(1)'")
-      dob <- Right(dateFormat.parseDateTime(row(2).trim))
-    } yield new AddressBookEntry(name, sex, dob)
+    if (row.length != 3) {
+      Left(s"row does not have 3 fields '$row'")
+    } else {
+      for {
+        name <- Right(row(0).trim)
+        sex <- Sex.fromString(row(1).trim).toRight(s"Unknown sex '$row(1)'")
+        dob <- parseDate(row(2).trim)
+      } yield new AddressBookEntry(name, sex, dob)
+    }
+  }
+
+  def parseDate(str: String): Either[String,DateTime] = {
+    Try(dateFormat.parseDateTime(str)) match {
+      case Success(d) => Right(d)
+      case Failure(ex) => Left(ex.getMessage)
+    }
   }
 }
 
 object AddressBook {
   def loadFile(filename: String): Either[String,Seq[AddressBookEntry]] = {
-    val reader = CSVReader.open(filename)
-
-    val entries = reader.iterator.map { e: Seq[String] => AddressBookEntry.fromCsvRow(e) }
-
-    println(entries.toSeq)
-
-    entries.foreach(println)
-
-    Right(Seq.empty)
+    try {
+      CSVReader.open(filename).all.traverseU(e => AddressBookEntry.fromCsvRow(e))
+    } catch {
+      case ex: Exception => Left(s"Cannot open file: $filename")
+    }
   }
 }

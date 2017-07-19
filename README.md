@@ -11,3 +11,5 @@ The test data is very small and cannot give a real idea of what would be encount
 ## Comments
 
 The date format is terrible, why are we re-introducing Y2K bugs?
+
+I have been down a very long rabbit hole of Either and Try

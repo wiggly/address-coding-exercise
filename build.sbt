@@ -6,6 +6,7 @@ scalaVersion := "2.12.1"
 
 libraryDependencies ++= Seq(
   "com.github.tototoshi" %% "scala-csv" % "1.3.4",
-  "joda-time" % "joda-time" % "2.9.9"
+  "joda-time" % "joda-time" % "2.9.9",
+  "org.typelevel" %% "cats" % "0.9.0"
 )
 
